@@ -30,7 +30,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; padding: 40px 24px 80px; line-height: 1.6; }
+body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; padding: 0; line-height: 1.6; overflow-x: hidden; }
 
 /* ── ESTILOS DEL SPLASH SCREEN ELEGANTE ── */
 #splash-screen {
@@ -134,11 +134,11 @@ body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; pa
   justify-content: center;
   margin-bottom: 20px;
   background: #fff;
-  overflow: hidden; /* Corrección: Evita desbordes */
+  overflow: hidden;
 }
 .modal-img {
-  width: 100%; /* Corrección: Forzar ajuste responsive */
-  height: 100%; /* Corrección: Forzar ajuste responsive */
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 .modal-title {
@@ -190,10 +190,10 @@ body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; pa
   background: #fca5a5;
 }
 
-/* ── CONTENEDOR PRINCIPAL AMPLIO (PC / DESKTOP WIDESCREEN) ── */
-.wrap { max-width: 1320px; margin: 0 auto; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
+/* ── CONTENEDOR PRINCIPAL AMPLIO (MODIFICADO PARA OCUPAR TODA LA PANTALLA) ── */
+.wrap { width: 100%; max-width: 100%; min-height: 100vh; background: var(--bg-card); border-radius: 0; box-shadow: none; border: none; overflow: hidden; display: flex; flex-direction: column; }
 
-/* ── HEADER CON NUEVO DISEÑO ANGIE COSMETICS ── */
+/* ── HEADER CON DISEÑO ANGIE COSMETICS ── */
 .hdr { background: linear-gradient(135deg, #00b4e6, #008cb4); color: #fff; padding: 2.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .brand-title { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
 .hdr p { font-size: 14px; opacity: 0.9; margin-top: 4px; font-weight: 500; }
@@ -209,8 +209,8 @@ body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; pa
 .vbtn:hover { color: var(--text-main); background: rgba(15, 23, 42, 0.04); }
 .vbtn.on { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); font-weight: bold; border: 1px solid var(--border-color); }
 
-/* ── VISTA CUADRÍCULA AMPLIA (PC) ── */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 2.5rem; max-height: 680px; overflow-y: auto; background: #f8fafc; scroll-behavior: smooth; }
+/* ── VISTA CUADRÍCULA ELEGANTE EXPANSIBLE ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 2.5rem; flex: 1; overflow-y: auto; background: #f8fafc; scroll-behavior: smooth; }
 .card { border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: #fff; transition: var(--transition); display: flex; flex-direction: column; position: relative; box-shadow: var(--shadow-sm); cursor: pointer; }
 .card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 .card.sel { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 2px var(--primary); }
@@ -230,7 +230,7 @@ body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; pa
 .qr button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 .qr span { font-size: 14px; font-weight: 800; color: var(--text-main); min-width: 30px; text-align: center; }
 
-/* ── VISTA LISTA AMPLIA (PC) ── */
+/* ── VISTA LISTA AMPLIA ── */
 .grid.lv { grid-template-columns: 1fr; gap: 12px; padding: 2rem 2.5rem; }
 .lcard { display: flex; align-items: center; gap: 24px; padding: 16px 24px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #fff; transition: var(--transition); box-shadow: var(--shadow-sm); cursor: pointer; }
 .lcard:hover { border-color: var(--primary); transform: translateX(2px); }
@@ -255,8 +255,8 @@ body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; pa
 .empty { padding: 5rem 2rem; text-align: center; color: var(--text-muted); font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; justify-content: center; width: 100%; grid-column: 1 / -1; }
 .empty span { font-weight: 600; }
 
-/* ── PANEL DE LA COTIZACIÓN GENERADA COMPLETA ── */
-.qbox { max-width: 1320px; margin: 30px auto 0; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); overflow: hidden; display: none; transition: var(--transition); }
+/* ── PANEL DE LA COTIZACIÓN COMPLETA A FULL ANCHO ── */
+.qbox { width: 100%; max-width: 100%; margin: 0; background: #fff; border-radius: 0; box-shadow: none; border-top: 2px solid var(--border-color); overflow: hidden; display: none; transition: var(--transition); }
 .qi { padding: 3rem; }
 .qh { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 3px solid var(--primary); gap: 20px; }
 .qtit { font-size: 22px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
@@ -278,9 +278,9 @@ table.qt tbody tr:hover { background: #f8fafc; }
 .b2.pdf { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 6px 16px rgba(0, 170, 221, 0.2); }
 .b2.pdf:hover { background: var(--primary-hover); box-shadow: 0 8px 24px rgba(0, 170, 221, 0.3); }
 
-/* ── SISTEMA RESPONSIVO (MÓVIL ADAPTATIVO EXCLUSIVO) ── */
+/* ── SISTEMA RESPONSIVO ADAPTATIVO ── */
 @media (max-width: 768px) {
-  body { padding: 16px 12px 60px; }
+  body { padding: 0; }
   .hdr { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 10px; }
   .brand-title { font-size: 32px; }
   .hdr span { font-size: 12px; align-self: flex-start; }
@@ -288,7 +288,7 @@ table.qt tbody tr:hover { background: #f8fafc; }
   .toolbar input { padding: 11px 16px; font-size: 14px; }
   .vbtn { width: 38px; height: 38px; font-size: 18px; }
   
-  .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 1rem 8px; max-height: 520px; }
+  .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 1rem 8px; }
   .ci-wrap { padding: 6px; aspect-ratio: 1; }
   .cb { padding: 10px; }
   .cn { font-size: 12px; min-height: 34px; margin-bottom: 4px; font-weight: 600; -webkit-line-clamp: 2; }
@@ -444,7 +444,7 @@ function toggleProductFromModal() {
   }
 }
 
-// ─── MATRIZ DE PRODUCTOS ORIGINALES CON DESCRIPCIONES EXTRA ─────────────────────────────────
+// ─── MATRIZ DE PRODUCTOS ORIGINALES ─────────────────────────────────
 const P = [
   {name:"Atomy Absolute Hydra Balm",              price:75000,  desc:"Bálsamo ultra hidratante portátil en barra. Aporta una hidratación intensa de forma inmediata, ideal para zonas resecas y para dar un acabado radiante y luminoso en cualquier momento.", img:px("https://image.atomy.com/CO/goods/O01523/org/738/251204000048738.png?w=600&h=600")},
   {name:"Atomy Mascarilla de Arcilla Hinoki",      price:80000,  desc:"Tratamiento purificante con arcilla premium y extracto de Hinoki. Absorbe el exceso de grasa profunda, reduce los poros visiblemente y calma las pieles sensibles con un aroma terapéutico.", img:px("https://image.atomy.com/CO/goods/O01514/editor/514/detail_o01514_0001.png")},
@@ -725,4 +725,4 @@ render();
 upd();
 </script>
 </body>
-</html>
+</html>>
