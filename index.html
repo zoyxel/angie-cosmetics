@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angie Cosmetics · Cotizador Atomy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --primary: #00aadd;
+  --primary-hover: #0093be;
+  --primary-light: #f0faff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.02);
+  --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+body { background: var(--bg-app); color: var(--text-main); min-height: 100vh; padding: 40px 24px 80px; line-height: 1.6; }
+
+/* ── ESTILOS DEL SPLASH SCREEN ELEGANTE ── */
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+}
+
+#splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-content {
+  max-width: 500px;
+  width: 85%;
+  text-align: center;
+  transform: scale(0.7);
+  opacity: 0;
+  animation: splashEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.splash-img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+@keyframes splashEnter {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── ESTILOS DE LA VENTANA EMERGENTE (MODAL) DE DETALLES ── */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+.modal.open {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-content {
+  background: #fff;
+  max-width: 500px;
+  width: 90%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  padding: 30px;
+  position: relative;
+  transform: scale(0.9);
+  transition: var(--transition);
+}
+.modal.open .modal-content {
+  transform: scale(1);
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  font-size: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.modal-close:hover {
+  color: var(--text-main);
+}
+.modal-img-wrap {
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: #fff;
+  overflow: hidden; /* Corrección: Evita desbordes */
+}
+.modal-img {
+  width: 100%; /* Corrección: Forzar ajuste responsive */
+  height: 100%; /* Corrección: Forzar ajuste responsive */
+  object-fit: contain;
+}
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.modal-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 16px;
+}
+.modal-desc {
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+  margin-bottom: 20px;
+}
+.modal-action-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.modal-action-btn.add {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 170, 221, 0.2);
+}
+.modal-action-btn.add:hover {
+  background: var(--primary-hover);
+}
+.modal-action-btn.remove {
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+}
+.modal-action-btn.remove:hover {
+  background: #fca5a5;
+}
+
+/* ── CONTENEDOR PRINCIPAL AMPLIO (PC / DESKTOP WIDESCREEN) ── */
+.wrap { max-width: 1320px; margin: 0 auto; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── HEADER CON NUEVO DISEÑO ANGIE COSMETICS ── */
+.hdr { background: linear-gradient(135deg, #00b4e6, #008cb4); color: #fff; padding: 2.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.brand-title { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+.hdr p { font-size: 14px; opacity: 0.9; margin-top: 4px; font-weight: 500; }
+.hdr span { font-size: 14px; opacity: 0.95; background: rgba(255,255,255,0.18); padding: 6px 14px; border-radius: 30px; font-weight: 600; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); }
+
+/* ── BARRA DE BÚSQUEDA Y CONTROLES EXPANSIÓN ── */
+.toolbar { padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border-color); background: #fff; display: flex; gap: 20px; align-items: center; }
+.search-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
+.toolbar input { width: 100%; padding: 14px 20px; border: 2px solid var(--border-color); border-radius: var(--radius-md); font-size: 15px; background: #fff; color: var(--text-main); transition: var(--transition); outline: none; font-weight: 500; }
+.toolbar input:focus { border-color: var(--primary); box-shadow: 0 0 0 5px rgba(0, 170, 221, 0.15); }
+.view-toggle { display: flex; background: #f8fafc; padding: 5px; border-radius: var(--radius-md); border: 1px solid var(--border-color); gap: 4px; }
+.vbtn { width: 44px; height: 44px; border: none; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+.vbtn:hover { color: var(--text-main); background: rgba(15, 23, 42, 0.04); }
+.vbtn.on { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); font-weight: bold; border: 1px solid var(--border-color); }
+
+/* ── VISTA CUADRÍCULA AMPLIA (PC) ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; padding: 2.5rem; max-height: 680px; overflow-y: auto; background: #f8fafc; scroll-behavior: smooth; }
+.card { border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: #fff; transition: var(--transition); display: flex; flex-direction: column; position: relative; box-shadow: var(--shadow-sm); cursor: pointer; }
+.card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.card.sel { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 2px var(--primary); }
+.ci-wrap { width: 100%; aspect-ratio: 1.1; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color); padding: 12px; }
+.ci { max-width: 100%; max-height: 100%; object-fit: contain; display: block; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.card:hover .ci { transform: scale(1.05); }
+.ph { font-size: 48px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
+.cb { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+.cn { font-size: 15px; font-weight: 700; color: var(--text-main); line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px; }
+.cp { font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 16px; margin-top: auto; }
+.ck { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; position: relative; }
+.ck input { accent-color: var(--primary); width: 18px; height: 18px; cursor: pointer; }
+.ck label { font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 600; user-select: none; }
+.card.sel .ck label { color: var(--primary); font-weight: 700; }
+.qr { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 14px; background: #f1f5f9; padding: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); }
+.qr button { width: 34px; height: 34px; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; color: var(--text-main); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: var(--transition); box-shadow: var(--shadow-sm); }
+.qr button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.qr span { font-size: 14px; font-weight: 800; color: var(--text-main); min-width: 30px; text-align: center; }
+
+/* ── VISTA LISTA AMPLIA (PC) ── */
+.grid.lv { grid-template-columns: 1fr; gap: 12px; padding: 2rem 2.5rem; }
+.lcard { display: flex; align-items: center; gap: 24px; padding: 16px 24px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #fff; transition: var(--transition); box-shadow: var(--shadow-sm); cursor: pointer; }
+.lcard:hover { border-color: var(--primary); transform: translateX(2px); }
+.lcard.sel { background: var(--primary-light); border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.liwrap { width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); padding: 6px; }
+.li { max-width: 100%; max-height: 100%; object-fit: contain; }
+.linfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ln { font-size: 16px; font-weight: 700; color: var(--text-main); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp { font-size: 15px; font-weight: 800; color: var(--primary); }
+.lr { display: flex; align-items: center; gap: 24px; flex-shrink: 0; }
+.lr input { accent-color: var(--primary); width: 20px; height: 20px; cursor: pointer; }
+.tag { font-size: 11px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 6px; padding: 3px 8px; margin-left: 10px; font-weight: 700; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── BARRA DE RESUMEN INFERIOR INTERACTIVA ── */
+.sbar { background: #fff; border-top: 1px solid var(--border-color); padding: 1.75rem 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.03); }
+.stxt { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+.stot { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+.gbtn { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-md); padding: 15px 36px; font-size: 15px; cursor: pointer; font-weight: 700; transition: var(--transition); display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 8px 20px rgba(0, 170, 221, 0.3); }
+.gbtn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0, 170, 221, 0.4); }
+.gbtn:active:not(:disabled) { transform: translateY(0); }
+.gbtn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; transform: none; }
+.empty { padding: 5rem 2rem; text-align: center; color: var(--text-muted); font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; justify-content: center; width: 100%; grid-column: 1 / -1; }
+.empty span { font-weight: 600; }
+
+/* ── PANEL DE LA COTIZACIÓN GENERADA COMPLETA ── */
+.qbox { max-width: 1320px; margin: 30px auto 0; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); overflow: hidden; display: none; transition: var(--transition); }
+.qi { padding: 3rem; }
+.qh { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 3px solid var(--primary); gap: 20px; }
+.qtit { font-size: 22px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+.qdat { font-size: 14px; color: var(--text-muted); margin-top: 6px; font-weight: 600; }
+.qtel { font-size: 14px; color: var(--text-main); text-align: right; font-weight: 700; background: #f8fafc; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); }
+
+table.qt { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+table.qt th { text-align: left; font-size: 13px; font-weight: 700; color: var(--text-muted); padding: 14px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; text-transform: uppercase; letter-spacing: 0.75px; }
+table.qt th:last-child { text-align: right; }
+table.qt td { padding: 16px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: var(--text-main); vertical-align: middle; }
+table.qt td:last-child { text-align: right; font-weight: 700; }
+table.qt tbody tr:hover { background: #f8fafc; }
+.ttr td { font-weight: 700; font-size: 16px; border-bottom: none!important; padding-top: 20px!important; background: var(--primary-light); color: var(--text-main); }
+.ttr td:last-child { font-size: 20px; color: var(--primary); font-weight: 900; }
+
+.qa { display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color); flex-wrap: wrap; }
+.b2 { border: 1px solid var(--border-color); background: #fff; color: var(--text-main); border-radius: var(--radius-md); padding: 14px 28px; font-size: 14px; cursor: pointer; font-weight: 700; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
+.b2:hover { background: #f8fafc; border-color: var(--border-hover); }
+.b2.pdf { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 6px 16px rgba(0, 170, 221, 0.2); }
+.b2.pdf:hover { background: var(--primary-hover); box-shadow: 0 8px 24px rgba(0, 170, 221, 0.3); }
+
+/* ── SISTEMA RESPONSIVO (MÓVIL ADAPTATIVO EXCLUSIVO) ── */
+@media (max-width: 768px) {
+  body { padding: 16px 12px 60px; }
+  .hdr { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .brand-title { font-size: 32px; }
+  .hdr span { font-size: 12px; align-self: flex-start; }
+  .toolbar { padding: 1.25rem 1rem; gap: 12px; }
+  .toolbar input { padding: 11px 16px; font-size: 14px; }
+  .vbtn { width: 38px; height: 38px; font-size: 18px; }
+  
+  .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 1rem 8px; max-height: 520px; }
+  .ci-wrap { padding: 6px; aspect-ratio: 1; }
+  .cb { padding: 10px; }
+  .cn { font-size: 12px; min-height: 34px; margin-bottom: 4px; font-weight: 600; -webkit-line-clamp: 2; }
+  .cp { font-size: 13px; margin-bottom: 8px; }
+  .ck label { font-size: 11px; }
+  .ck input { width: 15px; height: 15px; }
+  .qr { margin-top: 8px; padding: 3px; }
+  .qr button { width: 26px; height: 26px; font-size: 13px; }
+  .qr span { font-size: 12px; min-width: 20px; }
+  
+  .grid.lv { grid-template-columns: 1fr !important; padding: 12px; gap: 8px; }
+  .lcard { padding: 10px 14px; gap: 14px; }
+  .liwrap { width: 60px; height: 60px; padding: 4px; }
+  .ln { font-size: 14px; }
+  .lp { font-size: 13px; }
+  .lr { gap: 12px; }
+  .lr input { width: 18px; height: 18px; }
+  
+  .sbar { padding: 1.25rem 1rem; gap: 16px; }
+  .stot { font-size: 20px; }
+  .gbtn { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+  
+  .qi { padding: 1.5rem 1rem; }
+  .qh { flex-direction: column; align-items: fill; gap: 12px; margin-bottom: 20px; }
+  .qtit { font-size: 18px; }
+  .qtel { text-align: left; display: inline-block; width: max-content; padding: 6px 12px; font-size: 13px; }
+  table.qt th { padding: 10px 8px; font-size: 11px; letter-spacing: 0.25px; }
+  table.qt td { padding: 12px 8px; font-size: 13px; }
+  .ttr td { font-size: 14px; }
+  .ttr td:last-child { font-size: 16px; }
+  .qa { flex-direction: column; width: 100%; gap: 10px; margin-top: 16px; }
+  .b2 { width: 100%; justify-content: center; padding: 14px; }
+  
+  .modal-content { padding: 20px; width: 95%; }
+  .modal-img-wrap { height: 160px; }
+  .modal-title { font-size: 18px; }
+  .modal-price { font-size: 16px; margin-bottom: 10px; }
+  .modal-desc { font-size: 13px; padding-top: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div id="splash-screen">
+  <div class="splash-content">
+    <img src="https://i.pinimg.com/1200x/32/ba/e8/32bae835541d14fae69948b0e46a50e4.jpg" alt="Angie Cosmetics Promoción" class="splash-img">
+  </div>
+</div>
+
+<div id="product-modal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <button class="modal-close" onclick="forceCloseModal()">×</button>
+    <div class="modal-img-wrap">
+      <img id="modal-img" src="" alt="">
+    </div>
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-price" class="modal-price"></div>
+    <div id="modal-desc" class="modal-desc"></div>
+    <button id="modal-action-btn" class="modal-action-btn" onclick="toggleProductFromModal()"></button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <h1 class="brand-title">Angie Cosmetics</h1>
+      <p>Cotizador Oficial · Cuidado de la piel</p>
+    </div>
+    <span>Atomy Colombia</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrapper">
+      <input type="text" id="search" placeholder="🔍 Buscar producto por nombre..." oninput="render()">
+    </div>
+    <div class="view-toggle">
+      <button class="vbtn on" id="bg" onclick="sv('grid')" title="Vista Cuadrícula de Tarjetas">⊞</button>
+      <button class="vbtn" id="bl" onclick="sv('list')" title="Vista de Lista Horizontal">☰</button>
+    </div>
+  </div>
+
+  <div class="grid" id="pl"></div>
+
+  <div class="sbar">
+    <div>
+      <div class="stxt" id="si">0 productos seleccionados</div>
+      <div class="stot" id="st2">Total: $0 COP</div>
+    </div>
+    <button class="gbtn" id="gb" onclick="genQ()" disabled>Generar cotización ↗</button>
+  </div>
+</div>
+
+<div class="qbox" id="qb">
+  <div class="qi" id="qi"></div>
+</div>
+
+<script>
+const px = u => `https://wsrv.nl/?url=${encodeURIComponent(u)}&w=300&h=300&fit=cover&output=jpg`;
+const fmt = n => '$' + n.toLocaleString('es-CO') + ' COP';
+
+// CONTROLADORES JAVASCRIPT DEL SPLASH SCREEN
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => splash.remove(), 600);
+    }
+  }, 3000);
+});
+
+let currentModalIndex = null;
+
+// FUNCIONES PARA CONTROLAR LA VENTANA EMERGENTE (MODAL)
+function openModal(index) {
+  currentModalIndex = index;
+  const product = P[index];
+  const isSelected = state[index].c;
+  
+  document.getElementById('modal-img').src = product.img;
+  document.getElementById('modal-title').textContent = product.name;
+  document.getElementById('modal-price').textContent = fmt(product.price);
+  document.getElementById('modal-desc').textContent = product.desc || "Sin descripción disponible para este tratamiento de belleza de alta tecnología Atomy.";
+  
+  const actionBtn = document.getElementById('modal-action-btn');
+  if (isSelected) {
+    actionBtn.textContent = "❌ Quitar de la cotización";
+    actionBtn.className = "modal-action-btn remove";
+  } else {
+    actionBtn.textContent = "✨ Añadir a la cotización";
+    actionBtn.className = "modal-action-btn add";
+  }
+  
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function forceCloseModal() {
+  document.getElementById('product-modal').classList.remove('open');
+  currentModalIndex = null;
+}
+
+function closeModal(event) {
+  if (event.target.id === 'product-modal') {
+    forceCloseModal();
+  }
+}
+
+function toggleProductFromModal() {
+  if (currentModalIndex !== null) {
+    const currentStatus = state[currentModalIndex].c;
+    tog(currentModalIndex, !currentStatus);
+    forceCloseModal();
+  }
+}
+
+// ─── MATRIZ DE PRODUCTOS ORIGINALES CON DESCRIPCIONES EXTRA ─────────────────────────────────
+const P = [
+  {name:"Atomy Absolute Hydra Balm",              price:75000,  desc:"Bálsamo ultra hidratante portátil en barra. Aporta una hidratación intensa de forma inmediata, ideal para zonas resecas y para dar un acabado radiante y luminoso en cualquier momento.", img:px("https://image.atomy.com/CO/goods/O01523/org/738/251204000048738.png?w=600&h=600")},
+  {name:"Atomy Mascarilla de Arcilla Hinoki",      price:80000,  desc:"Tratamiento purificante con arcilla premium y extracto de Hinoki. Absorbe el exceso de grasa profunda, reduce los poros visiblemente y calma las pieles sensibles con un aroma terapéutico.", img:px("https://image.atomy.com/CO/goods/O01514/editor/514/detail_o01514_0001.png")},
+  {name:"Cuidado Nocturno 4 Pasos (1 Set)",        price:175000, desc:"El famoso spa en casa de Atomy. Incluye Limpiador Profundo, Espuma Limpiadora, Gel Exfoliante y Mascarilla Peel-Off para transformar la textura de tu piel mientras descansas.", img:px("https://image.atomy.com/ID/goods/I00355/org/581/240930000025581.jpg?w=600&h=600")},
+  {name:"Aplicador Atomy Absolute",                price:20000,  isNew:true, desc:"Herramienta masajeadora ergonómica diseñada para mejorar la absorción de los nutrientes, activar la microcirculación y maximizar el efecto reafirmante de las cremas.", img:px("https://image.atomy.com/CO/goods/O01517/org/262/250816000046262.jpg?w=600&h=600")},
+  {name:"Hydra Brightening Care Set",              price:190000, isNew:true, desc:"Dúo dinámico (esencia y crema) infundido con agua de micro-cápsulas y extracto de frutas. Ofrece una hidratación ligera de absorción veloz para un rostro fresco, claro y lleno de energía.", img:px("https://image.atomy.com/CO/goods/O00757/editor/757/detail_o00757_0001.png")},
+  {name:"Atomy Loción de Protección Solar",        price:140000, desc:"Fluido protector de amplio espectro de alta duración. Protege contra rayos UV perjudiciales sin dejar rastro blanco grasoso, dejando un velo terso ideal para el uso diario.", img:px("https://publish-static.atomy.com/images/products/kr/001555/bg_poster.png")},
+  {name:"Mascarilla de Oro de 24K",                price:180000, desc:"Lujosa mascarilla peel-off con infusión de oro real de 24 quilates. Tensa el contorno facial, elimina impurezas celulares muertas y devuelve al rostro un brillo de porcelana inigualable.", img:px("https://image.atomy.com/MX/goods/X01513/org/821/250717000044821.jpg?w=600&h=600")},
+  {name:"Atomy Absolute Snow Tónico — Paso 1",     price:120000, desc:"Tónico iluminador avanzado de la línea Snow. Equilibra el pH tras la limpieza, suaviza la textura áspera y prepara los canales de absorción para los activos despigmentantes.", img:px("https://image.atomy.com/MX/goods/X01525/org/761/250717000044761.jpg?w=600&h=600")},
+  {name:"Atomy Absolute Snow Dark Spot Corrector", price:100000, desc:"Tratamiento concentrado de precisión milimétrica para combatir manchas oscuras localizadas, hiperpigmentación y secuelas de imperfecciones severas.", img:px("https://image.atomy.com/CO/goods/O01526/editor/526/detail_o01526_0001.jpg")},
+  {name:"Atomy Absolute Snow Suero — Paso 3",      price:150000, desc:"Suero de brillo cristalino y alta potencia celular. Uniforma el tono general del rostro apagado y disminuye la producción excesiva de melanina.", img:px("https://image.atomy.com/CO/goods/O01527/editor/527/detail_o01527_0001.jpg")},
+  {name:"Atomy Absolute Snow Crema de Día",        price:150000, desc:"Crema protectora e iluminadora diurna. Retiene la humedad celular bloqueando las agresiones ambientales del entorno urbano y manteniendo un acabado luminoso.", img:px("https://image.atomy.com/CO/goods/O01528/editor/528/detail_o01528_0001.jpg")},
+  {name:"Atomy Absolute Snow Crema de Noche",      price:150000, desc:"Fórmula de reparación nocturna profunda. Regenera la claridad celular de la piel fatigada reduciendo manchas oscuras mientras duermes.", img:px("https://image.atomy.com/MX/goods/X01529/org/751/250717000044751.jpg?w=600&h=600")},
+  {name:"Atomy Absolute Snow Protector Solar",     price:90000,  desc:"Bloqueador de máxima defensa UV con tecnología Absolute Brightening. Previene la formación de nuevas manchas causadas directamente por la radiación solar intensa.", img:px("https://image.atomy.com/CO/goods/O01531/editor/531/detail_o01531_0001.jpg")},
+  {name:"Desmaquillante Bifásico",                 price:60000,  desc:"Removedor suave pero implacable con el maquillaje a prueba de agua en ojos y labios. No irrita ni deja sensación aceitosa incómoda en zonas delicadas.", img:px("https://image.atomy.com/MX/goods/X00485/org/806/250717000044806.jpg?w=600&h=600")},
+  {name:"Adelica Máscara de Pestañas Volumen",     price:75000,  desc:"Pestañina premium de alta definición. Engrosa cada pestaña individualmente desde la raíz sin dejar molestos grumos, aportando una mirada cautivadora.", img:px("https://image.atomy.com/CO/goods/O04715/editor/715/detail_o04715_0007.jpg")},
+  {name:"Adelica Máscara de Pestañas Long-Lash",   price:80000,  desc:"Fórmula alargadora con microfibras naturales que se adhieren con ligereza creando un efecto de pestañas infinitas y curvas perfectas de larga duración.", img:px("https://image.atomy.com/CO/goods/O04716/editor/716/detail_o04716_0007.jpg")},
+  {name:"Lápiz de Cejas [Café]",                   price:40000,  desc:"Lápiz estilizador ultrafino con cepillo integrado. Permite dibujar trazos idénticos al pelo natural con una fijación resistente al sudor.", img:px("https://image.atomy.com/CO/goods/O04721/editor/721/detail_o04721_0008.jpg")},
+  {name:"Espuma Limpiadora — Paso 2",              price:45000,  desc:"Limpiador en crema que genera una espuma densa y rica. Remueve residuos microscópicos acumulados en el poro sin romper la barrera lipídica natural.", img:px("https://image.atomy.com/MX/goods/X00305/org/722/250717000044722.jpg?w=600&h=600")},
+  {name:"Mascarilla Diaria Expert [Hidratante] x10",price:55000, desc:"Paquete de 10 mascarillas de tela repletas de ampolla nutritiva concentrada. El alivio instantáneo de rescate rápido para pieles deshidratadas y secas.", img:px("https://image.atomy.com/CO/goods/O00465/editor/465/detail_o00465_0008.jpg")},
+  {name:"Cream Mist",                              price:70000,  desc:"Bruma facial fina formulada a base de crema líquida ligera. Ideal para rociar sobre el maquillaje y mantener la frescura y elasticidad en climas secos.", img:px("https://image.atomy.com/ID/goods/I00490/org/745/240930000025745.jpg?w=600&h=600")},
+  {name:"Parche para Ojos de Hidrogel x60",        price:95000,  desc:"Parches refrescantes de hidrogel para ojeras y líneas de expresión. Desinflaman las bolsas de los ojos cansados aportando colágeno soluble marino.", img:px("https://image.atomy.com/MX/goods/X00464/org/790/250717000044790.jpg?w=600&h=600")},
+  {name:"Marine Ampoule Mask x10",                 price:130000, desc:"Mascarillas premium enriquecidas con gel de algas y nutrientes del océano profundo. Rejuvenecimiento intensivo, firmeza y elasticidad garantizada.", img:px("https://image.atomy.com/CO/goods/O00463/org/889/250803000045889.jpg?w=600&h=600")},
+  {name:"Atomy Sun Stick",                         price:55000,  desc:"Protector solar en barra transparente de aplicación ultra cómoda sobre el maquillaje. Acabado mate sedoso, perfecto para re-aplicar fuera de casa.", img:px("https://image.atomy.com/MX/goods/X00286/org/767/250717000044767.jpg?w=600&h=600")},
+  {name:"Aceite Limpiador",                        price:85000,  desc:"Aceite hidrofílico sedoso que disuelve instantáneamente protectores solares pesados, sebo acumulado y maquillaje sin dejar la piel grasosa.", img:px("https://image.atomy.com/MX/goods/X00482/org/866/250717000044866.jpg?w=600&h=600")},
+  {name:"Atomy Absolute Protector Solar",          price:60000,  desc:"Protección de primer nivel antiedad. Integra la esencia reafirmante CellActive para cuidar las células mientras repele los rayos dañinos.", img:px("https://image.atomy.com/MX/goods/X00276/org/786/250717000044786.jpg?w=600&h=600")},
+  {name:"Absolute Tónico — Paso 1",                price:160000, desc:"Tónico premium de reactivación celular. Calma la piel al instante y potencia los resultados tensores de los pasos subsiguientes.", img:px("https://image.atomy.com/MX/goods/X00217/org/662/250717000044662.jpg?w=600&h=600")},
+  {name:"Absolute Ampolla — Paso 2",               price:200000, desc:"La joya de la corona antiedad de Atomy. Ampolla concentrada de alta tecnología diseñada para difuminar arrugas y signos severos de envejecimiento.", img:px("https://image.atomy.com/MX/goods/X00227/org/648/250717000044648.jpg?w=600&h=600")},
+  {name:"Absolute Suero — Paso 3",                 price:170000, desc:"Suero ultra-concentrado enfocado en devolver la densidad cutánea, mejorando de manera notable la elasticidad y contorno del rostro.", img:px("https://image.atomy.com/MX/goods/X00237/org/678/250717000044678.jpg?w=600&h=600")},
+  {name:"Absolute Loción — Paso 4",                price:160000, desc:"Emulsión hidratante equilibrante. Brinda una suavidad extrema unificando la barrera de hidratación interna cutánea.", img:px("https://image.atomy.com/MX/goods/X00247/org/683/250717000044683.jpg?w=600&h=600")},
+  {name:"Absolute Contorno de Ojos — Paso 5",      price:180000, desc:"Crema de tratamiento intensivo para la delicada zona ocular. Levanta los párpados caídos y suaviza visiblemente las patas de gallo.", img:px("https://image.atomy.com/MX/goods/X00257/org/653/250717000044653.jpg?w=600&h=600")},
+  {name:"Absolute Crema Nutritiva — Paso 6",       price:160000, desc:"Crema de sellado final de alta nutrición. Bloquea la evaporación de nutrientes y redefine la firmeza estructural del óvalo facial.", img:px("https://image.atomy.com/MX/goods/X00267/org/657/250717000044657.jpg?w=600&h=600")},
+  {name:"Brillo Labial",                           price:50700,  desc:"Gloss hidratante de sutil color rosa traslúcido. Otorga volumen óptico inmediato y un brillo espejo sin texturas pegajosas.", img:px("https://image.atomy.com/CO/goods/O00400/editor/400/detail_o00400_0002.jpg")},
+  {name:"Bálsamo Labial",                          price:25000,  desc:"Cuidado reparador con aceites naturales seleccionados. Sana labios agrietados o partidos por el frío o deshidratación de forma express.", img:px("https://image.atomy.com/MX/goods/X00460/org/273/250718000045273.jpg?w=600&h=600")},
+  {name:"Kit de Viaje [6 piezas]",                 price:120000, desc:"Versión compacta portátil de las mejores fórmulas de aseo y cuidado Atomy. Ideal para maletas de mano y estadías fuera del hogar.", img:px("https://image.atomy.com/CO/goods/O00553/editor/553/detail_o00553_0004.jpg")},
+  {name:"Crema BB",                                price:50000,  desc:"Crema correctora multifuncional. Unifica imperfecciones ligeras del tono, aporta hidratación y ofrece un escudo sutil contra factores climáticos.", img:px("https://image.atomy.com/MX/goods/X00265/org/830/250717000044830.jpg")},
+  {name:"Protector Solar Blanco x1",               price:50000,  desc:"Fórmula clásica protectora UV de acabado limpio e invisible. Excelente adherencia ligera ideal como base previa para el maquillaje.", img:px("https://publish-static.atomy.com/images/products/kr/000280/000280-01.webp")},
+  {name:"Protector Solar Beige x1",                price:50000,  desc:"Pantalla solar de amplio espectro con un sutil matiz beige unificador. Disimula ligeras rojeces cutáneas aportando un aspecto sano.", img:px("https://publish-static.atomy.com/images/products/kr/000280/000280-01.webp")},
+  {name:"Gel Exfoliante — Paso 3",                 price:50000,  desc:"Exfoliante suave sin partículas abrasivas. Disuelve impurezas mediante fricción pasiva dejando la superficie cutánea lisa como la seda.", img:px("https://image.atomy.com/MX/goods/X00315/org/713/250717000044713.jpg?w=600&h=600")},
+  {name:"Limpiador Profundo — Paso 1",             price:50000,  desc:"Crema limpiadora limpiaporos de base oleosa que remueve impurezas grasas, sebo y maquillaje pesado mientras suaviza e hidrata la textura.", img:px("https://image.atomy.com/MX/goods/X00325/org/693/250717000044693.jpg?w=600&h=600")},
+  {name:"Mascarilla Peel-Off — Paso 4",            price:50000,  desc:"Mascarilla tensora purificante. Minimiza poros abiertos de forma impactante y afirma la piel suelta tras retirarla por completo.", img:px("https://image.atomy.com/MX/goods/X00335/org/718/250717000044718.jpg?w=600&h=600")},
+];
+
+let state = P.map(() => ({ c: false, q: 1 }));
+let vm = 'grid';
+
+function sv(v) {
+  vm = v;
+  document.getElementById('bg').className = 'vbtn' + (v === 'grid' ? ' on' : '');
+  document.getElementById('bl').className = 'vbtn' + (v === 'list' ? ' on' : '');
+  render();
+}
+
+function handleCardClick(e, index) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('.qr') || e.target.closest('.ck')) {
+    return;
+  }
+  openModal(index);
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const el = document.getElementById('pl');
+  el.className = vm === 'list' ? 'grid lv' : 'grid';
+  let html = '', shown = 0;
+  P.forEach((p, i) => {
+    if (q && !p.name.toLowerCase().includes(q)) return;
+    shown++;
+    const s = state[i];
+    const tag = p.isNew ? '<span class="tag">Nuevo</span>' : '';
+    const qCtrl = s.c ? `<div class="qr"><button onclick="cq(${i},-1)">−</button><span id="q${i}">${s.q}</span><button onclick="cq(${i},1)">+</button></div>` : '';
+    if (vm === 'grid') {
+      html += `<div class="card${s.c ? ' sel' : ''}" id="c${i}" onclick="handleCardClick(event, ${i})">
+        <div class="ci-wrap">
+          <img class="ci" src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=ph>🌿</span>'">
+        </div>
+        <div class="cb">
+          <div class="cn">${p.name}${tag}</div>
+          <div class="cp">${fmt(p.price)}</div>
+          <div class="ck"><input type="checkbox" id="cb${i}" ${s.c ? 'checked' : ''} onchange="tog(${i},this.checked)"><label for="cb${i}">${s.c ? 'Seleccionado' : 'Agregar'}</label></div>
+          ${qCtrl}
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="lcard${s.c ? ' sel' : ''}" id="c${i}" onclick="handleCardClick(event, ${i})">
+        <div class="liwrap"><img class="li" src="${p.img}" alt="${p.name}" onerror="this.parentElement.innerHTML='<span style=font-size:22px>🌿</span>'"></div>
+        <div class="linfo"><div class="ln">${p.name}${tag}</div><div class="lp">${fmt(p.price)}</div></div>
+        <div class="lr">
+          <input type="checkbox" id="cb${i}" ${s.c ? 'checked' : ''} onchange="tog(${i},this.checked)">
+          ${qCtrl}
+        </div>
+      </div>`;
+    }
+  });
+  el.innerHTML = shown ? html : '<div class="empty">✨ <span>No se encontraron productos coincidentes.</span></div>';
+}
+
+function tog(i, v) {
+  state[i].c = v;
+  upd();
+  document.getElementById('qb').style.display = 'none';
+  render();
+}
+
+function cq(i, d) {
+  state[i].q = Math.max(1, state[i].q + d);
+  const e = document.getElementById('q' + i);
+  if (e) e.textContent = state[i].q;
+  upd();
+}
+
+function upd() {
+  const tot = state.reduce((a, s, i) => s.c ? a + s.q * P[i].price : a, 0);
+  const units = state.reduce((a, s) => s.c ? a + s.q : a, 0);
+  const prods = state.filter(s => s.c).length;
+  document.getElementById('si').textContent = prods
+    ? `${prods} producto${prods > 1 ? 's' : ''} · ${units} unidad${units > 1 ? 'es' : ''}`
+    : '0 productos seleccionados';
+  document.getElementById('st2').textContent = 'Total: ' + fmt(tot);
+  document.getElementById('gb').disabled = prods === 0;
+}
+
+function buildTableHTML() {
+  const date = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+  let rows = '', tot = 0, cnt = 0;
+  state.forEach((s, i) => {
+    if (!s.c) return;
+    const sub = s.q * P[i].price;
+    tot += sub; cnt += s.q;
+    rows += `<tr>
+      <td>${P[i].name}</td>
+      <td style="text-align:center">${s.q}</td>
+      <td style="text-align:right">${fmt(P[i].price)}</td>
+      <td style="text-align:right">${fmt(sub)}</td>
+    </tr>`;
+  });
+  return { rows, tot, cnt, date };
+}
+
+function genQ() {
+  const { rows, tot, cnt, date } = buildTableHTML();
+  const html = `
+    <div class="qh">
+      <div>
+        <div class="qtit">📋 Cotización — Angie Cosmetics</div>
+        <div class="qdat">Atomy Colombia &nbsp;·&nbsp; ${date}</div>
+      </div>
+      <div class="qtel">📞 Tel de Contacto: 3014741927</div>
+    </div>
+    <table class="qt">
+      <thead>
+        <tr>
+          <th style="width:50%">Producto</th>
+          <th style="text-align:center;width:12%">Cant.</th>
+          <th style="text-align:right;width:19%">Precio unit.</th>
+          <th style="text-align:right;width:19%">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr class="ttr">
+          <td colspan="2" style="color:var(--text-muted);font-size:14px;font-weight:600">${cnt} unidad${cnt > 1 ? 'es' : ''} seleccionada${cnt > 1 ? 's' : ''}</td>
+          <td style="text-align:right;color:var(--text-muted);font-size:14px">Total General</td>
+          <td style="text-align:right;">${fmt(tot)}</td>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="qa">
+      <button class="b2" onclick="cpQ()">📋 Copiar Texto Completo</button>
+      <button class="b2 pdf" onclick="savePDF()">📄 Descargar PDF de Impresión</button>
+    </div>`;
+
+  const qb = document.getElementById('qb');
+  document.getElementById('qi').innerHTML = html;
+  qb.style.display = 'block';
+  setTimeout(() => qb.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+function savePDF() {
+  const btn = document.querySelector('.b2.pdf');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const date = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    const W = doc.internal.pageSize.getWidth();
+
+    doc.setFillColor(0, 170, 221);
+    doc.roundedRect(12, 12, W - 24, 26, 4, 4, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Angie Cosmetics · Cotización', 20, 22);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Atomy Colombia · Distribuidor Autorizado', 20, 31);
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumen de Productos', 12, 48);
+    
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Fecha de emisión: ${date}`, 12, 55);
+    doc.text('Teléfono: 3014741927', W - 12, 55, { align: 'right' });
+
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(12, 60, W - 12, 60);
+
+    const bodyRows = [];
+    let tot = 0, cnt = 0;
+    state.forEach((s, i) => {
+      if (!s.c) return;
+      const sub = s.q * P[i].price;
+      tot += sub; cnt += s.q;
+      bodyRows.push([P[i].name, String(s.q), fmt(P[i].price), fmt(sub)]);
+    });
+
+    doc.autoTable({
+      startY: 64,
+      head: [['Producto', 'Cant.', 'Precio unit.', 'Subtotal']],
+      body: bodyRows,
+      foot: [[
+        { content: `${cnt} unidad${cnt > 1 ? 'es' : ''}`, colSpan: 2, styles: { textColor: [71,85,105], fontSize: 9.5 } },
+        { content: 'TOTAL', styles: { halign: 'right', textColor: [15,23,42], fontStyle: 'bold' } },
+        { content: fmt(tot), styles: { halign: 'right', textColor: [0,170,221], fontStyle: 'bold', fontSize: 11.5 } }
+      ]],
+      styles: { fontSize: 9.5, cellPadding: 5, valign: 'middle', font: 'helvetica' },
+      headStyles: { fillColor: [248,250,252], textColor: [71,85,105], fontStyle: 'bold', fontSize: 9.5, lineColor: [226,232,240], lineWidth: 0.2 },
+      footStyles: { fillColor: [240,250,255], lineColor: [226,232,240], lineWidth: 0.2 },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { halign: 'center', cellWidth: 18 },
+        2: { halign: 'right', cellWidth: 38 },
+        3: { halign: 'right', cellWidth: 38 }
+      },
+      alternateRowStyles: { fillColor: [252,254,255] },
+      margin: { left: 12, right: 12 },
+      tableLineColor: [226,232,240],
+      tableLineWidth: 0.3,
+    });
+
+    const finalY = Math.min(doc.lastAutoTable.finalY + 14, doc.internal.pageSize.getHeight() - 15);
+    doc.setFontSize(8.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Documento de carácter informativo generado por el asistente Angie Cosmetics.', W / 2, finalY, { align: 'center' });
+
+    doc.save('Cotizacion_Angie_Cosmetics.pdf');
+  } catch(e) {
+    console.error(e);
+    alert('Error al compilar el reporte PDF: ' + e.message);
+  } finally {
+    btn.textContent = '📄 Descargar PDF de Impresión';
+    btn.disabled = false;
+  }
+}
+
+function cpQ() {
+  const date = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+  let lines = ['COTIZACIÓN — ANGIE COSMETICS', `Atomy Colombia · ${date}`, 'Contacto: 3014741927', '', 'Producto | Cant | Precio unit. | Subtotal'];
+  let tot = 0, cnt = 0;
+  state.forEach((s, i) => {
+    if (!s.c) return;
+    const sub = s.q * P[i].price;
+    tot += sub; cnt += s.q;
+    lines.push(`${P[i].name} | ${s.q} | ${fmt(P[i].price)} | ${fmt(sub)}`);
+  });
+  lines.push('', `TOTAL GENERAL (${cnt} uds): ${fmt(tot)}`);
+  navigator.clipboard.writeText(lines.join('\n')).then(() => alert('¡Texto de la cotización copiado correctamente!'));
+}
+
+render();
+upd();
+</script>
+</body>
+</html>
